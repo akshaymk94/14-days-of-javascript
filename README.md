@@ -144,3 +144,170 @@ let globalLet = 30;
 
 console.log("Outside block globalLet:", globalLet);
 ```
+
+# Javascript - Day 4
+
+## Closures in JavaScript
+
+A Closure in JavaScript is a powerful concept that combines a function with a reference to its surrounding state, known as the lexical environment. The lexical environment includes variables and functions available to the function when it was created.
+
+Reference: MDN Web Docs
+
+
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures
+
+Example:
+```javascript
+function getFullName() {
+    var firstName = 'John';
+    var lastName = 'Smith';
+    function printFullName() {
+        console.log(firstName, lastName);
+    }
+    printFullName();
+}
+
+getFullName(); // Output: John Smith
+```
+
+In the example above, the printFullName function forms a closure by capturing its surrounding environment. This means it can access variables firstName and lastName declared in its parent environment.
+
+What's crucial to understand is that the closure created by the printFullName function persists even after the getFullName function has finished executing, and its execution context is destroyed. This enables us to do something like:
+```javascript
+// Utilizing Closure
+function getFullName() {
+    var firstName = 'John';
+    var lastName = 'Smith';
+    return function printFullName() {
+        console.log(firstName, lastName);
+    }
+}
+
+const printMyName = getFullName();
+printMyName(); // Output: John Smith
+```
+This magic of closures allows us to create multiple instances, each with its own enclosed state, as shown here:
+```javascript
+
+// Example
+function getFullName(firstName) {
+    return function printFullName(lastName) {
+        console.log(firstName, lastName);
+    }
+}
+
+const printJohnsName = getFullName('John');
+printJohnsName('Smith'); // Output: John Smith
+
+const printJillsName = getFullName('Jill');
+printJillsName('Doe'); // Output: Jill Doe
+```
+Practical Example
+
+Closures find extensive use in JavaScript. A common use case is creating closures as callback functions for event handlers, especially when handling user interactions on a webpage. For instance, consider a scenario where a user clicks on buttons to change the color of a paragraph:
+```html
+// HTML elements
+<p id='paragraph'>
+Hey, I'm a color-changing paragraph! Choose your color here!
+</p>
+
+<button id="btnGreen">
+Green
+</button>
+
+<button id="btnBlue">
+Blue
+</button>
+
+<button id="btnRed">
+Red
+</button>
+```
+With closures, you can create reusable logic for this:
+```javascript
+
+const colorChanger = (color) => {
+  return function() {
+    document.getElementById('paragraph').style.color = color;
+  };
+}
+
+const colorGreen = colorChanger('green');
+const colorBlue = colorChanger('blue');
+const colorRed = colorChanger('red');
+
+document.getElementById('btnGreen').onclick = colorGreen;
+document.getElementById('btnBlue').onclick = colorBlue;
+document.getElementById('btnRed').onclick = colorRed;
+```
+In this example, colorChanger creates closures that remember and modify the color of the paragraph even after the initial function call, demonstrating the power and utility of closures in JavaScript.
+
+
+# Javascript - Day 5
+
+## Emulating private methods with Closure
+
+The concept of closure in Javascript provides us a way to achieve data hiding and encapsulation.
+This means we can use a closure to hide/protect sensitive data against unintended access or modification.
+
+Let's understand this concept with an example.
+
+Let's say that I want to build a way to create multiple employees, view their respective details and update their respective details. This can be achieved as shown below:
+
+```javascript
+// create a blueprint of the Employee function
+const Employee = function (name, yearsOfExperience, title) {
+    let details = {
+        "name": name,
+        "yearsOfExperience": yearsOfExperience,
+        "title": title
+    }
+
+    function updateDetails(record) {
+        details = record;
+    }
+
+    return {
+        getRecord() {
+            return details;
+        },
+        viewRecord() {
+            console.log(details);
+        },
+        updateRecord(recordReceived) {
+            updateDetails(recordReceived);
+        }
+    }
+}
+
+// create an Employee record, name it employeeOne
+let employeeOne = Employee("Mary Jane", 6, "SSE");
+
+// verify details of employeeOne
+employeeOne.viewRecord(); // {name: 'Mary Jane', yearsOfExperience: 6, title: 'SSE'}
+
+// fetch details of employeeOne
+const employeeRecord = employeeOne.getRecord()
+
+// modify the yearsOfExperience and title for employeeOne
+const updatedRecord = { ...employeeRecord, yearsOfExperience: 7, title: "Lead" }
+
+// update employeeOne's record
+employeeOne.updateRecord(updatedRecord);
+
+// verify details of employeeOne
+employeeOne.viewRecord(); // {name: 'Mary Jane', yearsOfExperience: 7, title: 'Lead'}
+
+// Create another Employee Record, name it employeeTwo
+let employeeTwo = Employee("John Smith", 2, "SE1");
+
+//view details of employeeTwo
+employeeTwo.viewRecord(); // {name: 'John Smith', yearsOfExperience: 2, title: 'SE1'}
+
+// cross verify the details of employeeOne again to ensure data encapsulation
+employeeOne.viewRecord(); // {name: 'Mary Jane', yearsOfExperience: 7, title: 'Lead'}
+
+// when you try to access the variable 'details' and function 'updateDetails' of employeeOne, it shows up as undefined.
+console.log(employeeOne.details); // undefined
+console.log(employeeOne.updateDetails); // undefined
+```
